@@ -36,6 +36,12 @@ class SubscriptionController extends Controller
 	    	return response('User not found or is not activated', 404);
 	    }
 
+		$subscription_item = $this->getSubscriptionType($data['subscription_type_id']);
+
+	    if (!$subscription_item) {
+		    return response('Subscription type not found', 404);
+	    }
+
 	    return response('', 200);
     }
 
@@ -67,6 +73,27 @@ class SubscriptionController extends Controller
 		}
 	}
 
+	/**
+	 * @param $id
+	 *
+	 * @return bool|Model|\Illuminate\Database\Eloquent\Relations\BelongsTo|object|null
+	 */
+	public function getSubscriptionType($id)
+	{
+		try {
+			$type = (SubscriptionType::class)
+				->where('subscription_type_id', $id)
+				->first();
+
+			if (!$type) {
+				return false;
+			}
+
+			return $type;
+		} catch (\Exception $exception) {
+			return false;
+		}
+	}
 	/**
 	 * @return array
 	 */
