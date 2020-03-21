@@ -6,20 +6,42 @@ use App\Subscription;
 use App\SubscriptionType;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
-		$subscriptions = Subscription::all();
+	    $parameters = [];
+
+	    $active = false;
+		$from = request()->input('from');
+		$to = request()->input('to');
+
+	    if (request()->input('active') == true) {
+		    $active = true;
+	    }
+
+		if ($active == true) {
+			array_push($parameters, ['to', '>=', now()]);
+		}
+		if ($active == false) {
+			array_push($parameters, ['to', '<', now()]);
+		}
+		if ($from && $to) {
+			array_push($parameters, ['from', '<=', $to]);
+			array_push($parameters, ['to', '>=', $from]);
+		}
+
+		$subscriptions = $this->getSubscriptions($parameters);
 
 		if (!$subscriptions) {
-			return response('No subscriptions were fount', 404);
+			return response()->json([],404);
 		}
 
 		$data = [];
@@ -36,7 +58,7 @@ class SubscriptionController extends Controller
 			]);
 		}
 
-		return response()->json($data);
+		return response()->json($data, 200);
     }
 
     /**
@@ -165,6 +187,11 @@ class SubscriptionController extends Controller
 		}
 	}
 
+	/**
+	 * @param $user_id
+	 *
+	 * @return boolean
+	 */
 	public function getActiveSubscriptionOfAnyType($user_id)
 	{
 		try {
@@ -179,6 +206,26 @@ class SubscriptionController extends Controller
 			}
 
 			return true;
+		} catch (\Exception $exception) {
+			return false;
+		}
+	}
+
+	/**
+	 * @param $parameters
+	 *
+	 * @return mixed
+	 */
+	public function getSubscriptions($parameters)
+	{
+		try {
+			$subscriptions = DB::table('subscriptions')->where($parameters);
+
+			if (!$subscriptions) {
+				return false;
+			}
+
+			return $subscriptions;
 		} catch (\Exception $exception) {
 			return false;
 		}
