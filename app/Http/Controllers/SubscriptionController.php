@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Subscription;
+use App\SubscriptionType;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
@@ -14,72 +16,67 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        //
+
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created subscription in the database.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        //
+	    $data = $this->validateRequest();
+	    $subscription = new Subscription();
+
+	    $user = $this->getUser($data);
+
+	    if (!$user) {
+	    	return response('User not found or is not activated', 404);
+	    }
+
+	    return response('', 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Subscription  $subscription
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Subscription $subscription)
-    {
-        //
-    }
+	public function getUser($data)
+	{
+		try {
+			$client = new Client();
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Subscription  $subscription
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Subscription $subscription)
-    {
-        //
-    }
+			$response = $client->request('GET', 'http://vaggelis.users.challenge.dev.monospacelabs.com/users');
+			$users = $response->getBody();
+			$found_user = '';
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Subscription  $subscription
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Subscription $subscription)
-    {
-        //
-    }
+			foreach ($users as $user) {
+				if ($user->id == $data['user_id']) {
+					$found_user = $user;
+				}
+			}
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Subscription  $subscription
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Subscription $subscription)
-    {
-        //
-    }
+			if (!$found_user) {
+				return false;
+			}
+			if (!$found_user->active) {
+				return false;
+			}
+
+			return $found_user;
+		} catch (\Exception $exception) {
+			return false;
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function validateRequest(): array
+	{
+		return request()->validate([
+			'subscription_type_id' => 'required',
+			'user_id' => 'required',
+		]);
+	}
+
+
 }
