@@ -16,7 +16,27 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-		return now()->addYear(1);
+		$subscriptions = Subscription::all();
+
+		if (!$subscriptions) {
+			return response('No subscriptions were fount', 404);
+		}
+
+		$data = [];
+
+		foreach ($subscriptions as $subscription) {
+			$subscription_type_name = $subscription->getSubscriptionTypeName();
+
+			array_push($data, [
+				'type' => $subscription_type_name,
+				'price' => $subscription->price,
+				'from' => $subscription->from,
+				'to' => $subscription->to,
+				'user_id' => $subscription->user_id
+			]);
+		}
+
+		return response()->json($data);
     }
 
     /**
@@ -27,7 +47,7 @@ class SubscriptionController extends Controller
      */
     public function store(Request $request)
     {
-	    $data = $this->validateRequest();
+	    $data = $this->validateStoreRequest();
 
 	    $user = $this->getUser($data);
 
@@ -167,11 +187,23 @@ class SubscriptionController extends Controller
 	/**
 	 * @return array
 	 */
-	public function validateRequest(): array
+	public function validateStoreRequest(): array
 	{
 		return request()->validate([
 			'subscription_type_id' => 'required',
 			'user_id' => 'required',
+		]);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function validateGetRequest(): array
+	{
+		return request()->validate([
+			'from' => 'required',
+			'to' => 'required',
+			'active' => 'required',
 		]);
 	}
 
