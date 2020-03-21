@@ -48,6 +48,13 @@ class SubscriptionController extends Controller
 		    return response('There is already and active subscription of this type', 400);
 	    }
 
+	    $active_subscription = $this->getActiveSubscriptionOfAnyType($user->id);
+
+	    $price = $subscription_item->price;
+	    if ($active_subscription) {
+	    	$price = $price - ( $price * (30 / 100));
+	    }
+
 	    return response('', 200);
     }
 
@@ -105,7 +112,7 @@ class SubscriptionController extends Controller
 	 * @param $user_id
 	 * @param $subscription_type_id
 	 *
-	 * @return
+	 * @return boolean
 	 */
 	public function getActiveSubscriptionOfThisType($user_id, $subscription_type_id)
 	{
@@ -126,6 +133,26 @@ class SubscriptionController extends Controller
 			return false;
 		}
 	}
+
+	public function getActiveSubscriptionOfAnyType($user_id)
+	{
+		try {
+			$subscription = Subscription::where([
+				['user_id', '=', $user_id],
+				['to', '>', now()]
+			])
+			->first();
+
+			if (!$subscription) {
+				return false;
+			}
+
+			return true;
+		} catch (\Exception $exception) {
+			return false;
+		}
+	}
+
 	/**
 	 * @return array
 	 */
