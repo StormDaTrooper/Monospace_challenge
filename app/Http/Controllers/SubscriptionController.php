@@ -153,7 +153,7 @@ class SubscriptionController extends Controller
 	public function getSubscriptionType($id)
 	{
 		try {
-			$type = (SubscriptionType::class)
+			$type = DB::table('subscription_types')
 				->where('subscription_type_id', $id)
 				->first();
 
@@ -176,12 +176,13 @@ class SubscriptionController extends Controller
 	public function getActiveSubscriptionOfThisType($user_id, $subscription_type_id)
 	{
 		try {
-			$subscription = Subscription::where([
-				['user_id', '=', $user_id],
-				['$subscription_type_id', '=', $subscription_type_id],
-				['to', '>', now()]
-			])
-			->first();
+			$subscription = DB::table('subscriptions')
+				->where([
+					['user_id', '=', $user_id],
+					['$subscription_type_id', '=', $subscription_type_id],
+					['to', '>', now()]
+				])
+				->first();
 
 			if (!$subscription) {
 				return false;
@@ -201,11 +202,12 @@ class SubscriptionController extends Controller
 	public function getActiveSubscriptionOfAnyType($user_id)
 	{
 		try {
-			$subscription = Subscription::where([
-				['user_id', '=', $user_id],
-				['to', '>', now()]
-			])
-			->first();
+			$subscription = DB::table('subscriptions')
+				->where([
+					['user_id', '=', $user_id],
+					['to', '>', now()]
+				])
+				->first();
 
 			if (!$subscription) {
 				return false;
@@ -225,7 +227,8 @@ class SubscriptionController extends Controller
 	public function getSubscriptions($parameters)
 	{
 		try {
-			$subscriptions = DB::table('subscriptions')->where($parameters);
+			$subscriptions = DB::table('subscriptions')
+				->where($parameters);
 
 			if (!$subscriptions) {
 				return false;
