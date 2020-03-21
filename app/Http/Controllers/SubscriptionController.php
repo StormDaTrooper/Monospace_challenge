@@ -42,6 +42,12 @@ class SubscriptionController extends Controller
 		    return response('Subscription type not found', 404);
 	    }
 
+	    $subscription_is_active = $this->getActiveSubscriptionOfThisType($user->id, $subscription_item->id);
+
+	    if ($subscription_is_active) {
+		    return response('There is already and active subscription of this type', 400);
+	    }
+
 	    return response('', 200);
     }
 
@@ -90,6 +96,32 @@ class SubscriptionController extends Controller
 			}
 
 			return $type;
+		} catch (\Exception $exception) {
+			return false;
+		}
+	}
+
+	/**
+	 * @param $user_id
+	 * @param $subscription_type_id
+	 *
+	 * @return
+	 */
+	public function getActiveSubscriptionOfThisType($user_id, $subscription_type_id)
+	{
+		try {
+			$subscription = Subscription::where([
+				['user_id', '=', $user_id],
+				['$subscription_type_id', '=', $subscription_type_id],
+				['to', '<', now()]
+			])
+			->first();
+
+			if (!$subscription) {
+				return false;
+			}
+
+			return true;
 		} catch (\Exception $exception) {
 			return false;
 		}
