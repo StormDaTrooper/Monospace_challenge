@@ -241,18 +241,4 @@ class SubscriptionController extends Controller
 			'user_id' => 'required',
 		]);
 	}
-
-	/**
-	 * @return array
-	 */
-	public function validateGetRequest(): array
-	{
-		return request()->validate([
-			'from' => 'required',
-			'to' => 'required',
-			'active' => 'required',
-		]);
-	}
-
-
 }
