@@ -37,6 +37,12 @@ class SubscriptionController extends Controller
 			array_push($parameters, ['from', '<=', $to]);
 			array_push($parameters, ['to', '>=', $from]);
 		}
+	    if ($from && !$to) {
+		    array_push($parameters, ['from', '>=', $from]);
+	    }
+	    if (!$from && $to) {
+		    array_push($parameters, ['to', '<=', $to]);
+	    }
 
 		$subscriptions = $this->getSubscriptions($parameters);
 
