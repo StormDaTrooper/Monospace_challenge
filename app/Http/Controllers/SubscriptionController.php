@@ -120,7 +120,7 @@ class SubscriptionController extends Controller
 			$subscription = Subscription::where([
 				['user_id', '=', $user_id],
 				['$subscription_type_id', '=', $subscription_type_id],
-				['to', '<', now()]
+				['to', '>', now()]
 			])
 			->first();
 
