@@ -15,9 +15,15 @@ class CreateSubscriptionsTable extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedInteger('subscription_type_id');
+            $table->string('user_id');
+            $table->integer('price');
+            $table->date('from');
+            $table->date('to');
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.
