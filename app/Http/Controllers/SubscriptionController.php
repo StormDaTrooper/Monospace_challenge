@@ -16,7 +16,7 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-
+		return now()->addYear(1);
     }
 
     /**
@@ -28,7 +28,6 @@ class SubscriptionController extends Controller
     public function store(Request $request)
     {
 	    $data = $this->validateRequest();
-	    $subscription = new Subscription();
 
 	    $user = $this->getUser($data);
 
@@ -55,7 +54,19 @@ class SubscriptionController extends Controller
 	    	$price = $price - ( $price * (30 / 100));
 	    }
 
-	    return response('', 200);
+	    $subscription = Subscription::create([
+		    'subscription_type_id' => $data['subscription_type_id'],
+		    'user_id' => $data['user_id'],
+		    'price' => $price,
+		    'from' => now(),
+		    'to' => now()->addYear(1)
+	    ]);
+
+	    if (!$subscription) {
+		    return response('Could not add subscription to the database', 500);
+	    }
+
+	    return response($subscription, 200);
     }
 
 	public function getUser($data)
